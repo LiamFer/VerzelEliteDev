@@ -24,7 +24,8 @@ public class LeadEntity {
     private String name;
     private String email;
     private String company;
-    private String interest;
+    private String necessity;
+    private boolean interested;
 
     @CreatedDate
     private LocalDateTime createdAt;

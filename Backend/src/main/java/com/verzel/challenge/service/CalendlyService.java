@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -76,25 +77,32 @@ public class CalendlyService {
     }
 
     public List<Map<String, Object>> getAvailableSlots() {
-        OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC).plusDays(7);
-        OffsetDateTime end = start.plusDays(6);
+        int offset = 0;
+        List<Map<String, Object>> slots = Collections.emptyList();
 
-        Map response = webClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/event_type_available_times")
-                        .queryParam("event_type", eventTypeUri)
-                        .queryParam("start_time", start)
-                        .queryParam("end_time", end)
-                        .build())
-                .retrieve()
-                .bodyToMono(Map.class)
-                .block();
+        while (slots.size() < 2) {
+            OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC).plusDays(7 + offset);
+            OffsetDateTime end = start.plusDays(6);
 
-        List<Map<String, Object>> slots = (List<Map<String, Object>>) response.get("collection");
-        List<Map<String, Object>> available = slots.stream()
-                .filter(slot -> "available".equals(slot.get("status")))
-                .toList();
-        Collections.shuffle(available);
-        return available.stream().limit(3).toList();
+            Map response = webClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/event_type_available_times")
+                            .queryParam("event_type", eventTypeUri)
+                            .queryParam("start_time", start)
+                            .queryParam("end_time", end)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(Map.class)
+                    .block();
+            List<Map<String, Object>> allSlots = (List<Map<String, Object>>) response.get("collection");
+            if (allSlots != null) {
+                slots = allSlots;
+            }
+            offset++;
+        }
+
+        Collections.shuffle(slots);
+        return slots.stream().limit(3).toList();
     }
+
 }

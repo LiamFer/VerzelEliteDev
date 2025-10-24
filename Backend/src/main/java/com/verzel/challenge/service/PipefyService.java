@@ -2,6 +2,7 @@ package com.verzel.challenge.service;
 
 import com.verzel.challenge.dto.pipefy.*;
 import jakarta.annotation.PostConstruct;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -89,20 +90,14 @@ public class PipefyService {
         }
     }
 
-
-    public String createCard(String nome, String email, String company, String necessidade, boolean interesse, String meetingLink) {
+    public String createCardWithEmail(String email) {
         String phaseId = phaseMap.get("Novo Lead");
         if (phaseId == null) throw new IllegalStateException("Fase 'Novo Lead' não encontrada.");
 
         Optional<Card> alreadyExists = this.getCardByEmail(email);
         if(alreadyExists.isPresent()) return alreadyExists.get().id;
 
-        String nomeId = fieldMap.get("Nome");
         String emailId = fieldMap.get("E-mail");
-        String companyId = fieldMap.get("Empresa");
-        String necessidadeId = fieldMap.get("Necessidade");
-        String meetingId = fieldMap.get("Link da Reunião");
-        String interesseId = fieldMap.get("Interessado");
 
         String mutation = String.format("""
             mutation {
@@ -111,11 +106,6 @@ public class PipefyService {
                 phase_id: %s,
                 title: "Lead capturado via API",
                 fields_attributes: [
-                  { field_id: "%s", field_value: "%s" },
-                  { field_id: "%s", field_value: "%s" },
-                  { field_id: "%s", field_value: "%s" },
-                  { field_id: "%s", field_value: "%s" },
-                  { field_id: "%s", field_value: "%s" },
                   { field_id: "%s", field_value: "%s" }
                 ]
               }) {
@@ -123,12 +113,7 @@ public class PipefyService {
               }
             }
         """, pipefyPipeId, phaseId,
-            nomeId, nome,
-            emailId, email,
-            companyId, company,
-            necessidadeId, necessidade,
-            meetingId, meetingLink,
-            interesseId, interesse ? "Sim" : "Não");
+                emailId, email);
         return performRequest(mutation,String.class);
     }
 
@@ -161,7 +146,7 @@ public class PipefyService {
                     !response.data.findCards.edges.isEmpty()) {
                 return Optional.of(response.data.findCards.edges.getFirst().node);
             } else {
-                return Optional.empty();
+                throw new EntityNotFoundException("Card não encontrado no Pipefy");
             }
         } catch (Exception e) {
             System.err.println("Erro ao buscar card: " + e.getMessage());
@@ -169,25 +154,39 @@ public class PipefyService {
         }
     }
 
-    public boolean updateCardFields(String cardId, boolean interesse, String meetingLink) {
-        String interesseId = fieldMap.get("Interessado");
+    // Post é Idempotent então é tranquilo fazer isso
+    public boolean updateCardFields(String cardId, String nome, String email, String company, String necessidade, Boolean interesse, String meetingLink) {
+        Optional<Card> cardExists = this.getCardByEmail(email);
+
+        String nomeId = fieldMap.get("Nome");
+        String emailId = fieldMap.get("E-mail");
+        String companyId = fieldMap.get("Empresa");
+        String necessidadeId = fieldMap.get("Necessidade");
         String meetingId = fieldMap.get("Link da Reunião");
+        String interesseId = fieldMap.get("Interessado");
 
         String mutation = String.format("""
                     mutation {
                       updateFieldsValues(input:{
                         nodeId: "%s"
-                        values:[{fieldId: "%s", value:"%s"},
-                                {fieldId: "%s", value:"%s"}
-                        ]
+                        values:[{ field_id: "%s", field_value: "%s" },
+                              { field_id: "%s", field_value: "%s" },
+                              { field_id: "%s", field_value: "%s" },
+                              { field_id: "%s", field_value: "%s" },
+                              { field_id: "%s", field_value: "%s" },
+                              { field_id: "%s", field_value: "%s" }]
                       })
                       {
                         success
                       }
                     }
                 """,cardId,
-                meetingId,meetingLink,
-                interesseId,interesse ? "Sim" : "Não");
+                nomeId, nome,
+                emailId, email,
+                companyId, company,
+                necessidadeId, necessidade,
+                meetingId, meetingLink,
+                interesseId, interesse ? "Sim" : "Não");
 
         UpdateFieldsResponse response = performRequest(mutation, UpdateFieldsResponse.class);
         return response != null &&
@@ -195,4 +194,5 @@ public class PipefyService {
                 response.data.updateFieldsValues != null &&
                 response.data.updateFieldsValues.success;
     }
+
 }

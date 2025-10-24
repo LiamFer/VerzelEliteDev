@@ -21,7 +21,7 @@ public class ChatController {
 
     @GetMapping("/message")
     public ResponseEntity<?> sendChatMessage(){
-        String ans = pipefyService.createCard("adolfo","adolfo23@email.com","grv","bolas",true,"linkzao do google");
+        String ans = pipefyService.createCard("adolfo","adolfo23@email.com","grv","AJuda no Business",true,"linkzao do google");
         return ResponseEntity.ok(pipefyService.updateCardFields("1242194202",false,"fre fray"));
     }
 
