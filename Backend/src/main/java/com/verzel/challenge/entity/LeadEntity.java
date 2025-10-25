@@ -21,18 +21,22 @@ public class LeadEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String cardId;
     private String name;
     private String email;
     private String company;
     private String necessity;
-    private boolean interested;
+    private Boolean interested;
+
+    public LeadEntity(String email) {
+        this.email = email;
+    }
+
+    @Column(name = "meeting_link", columnDefinition = "TEXT")
+    private String meetingLink;
 
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
-
-    @OneToOne
-    @JoinColumn(name = "session_id")
-    private ChatSessionEntity session;
 }

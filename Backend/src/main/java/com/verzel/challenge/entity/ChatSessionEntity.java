@@ -24,11 +24,23 @@ public class ChatSessionEntity {
 
     private String sessionId;
 
+    private String previousResponseId;
+
     @CreatedDate
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     private LocalDateTime lastInteraction;
 
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL)
     private List<MessageEntity> messages;
+
+    @OneToOne
+    @JoinColumn(name = "lead_id")
+    private LeadEntity lead;
+
+    public ChatSessionEntity(String sessionId){
+        this.sessionId = sessionId;
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.verzel.challenge.entity;
 
+import com.verzel.challenge.type.Sender;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,8 +21,17 @@ public class MessageEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String sender; // Aqui eu posso usar "user" ou "assistant"
+    @Enumerated(EnumType.STRING)
+    private Sender sender;
+
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
+
+    public MessageEntity(Sender sender, String content, ChatSessionEntity session) {
+        this.sender = sender;
+        this.content = content;
+        this.session = session;
+    }
 
     @CreatedDate
     private LocalDateTime createdAt;
