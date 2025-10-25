@@ -1,0 +1,4 @@
+package com.verzel.challenge.dto;
+
+public record APIMessage() {
+}
