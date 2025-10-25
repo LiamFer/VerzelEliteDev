@@ -1,6 +1,5 @@
 package com.verzel.challenge.dto.pipefy;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
