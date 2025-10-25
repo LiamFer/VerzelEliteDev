@@ -1,6 +1,10 @@
 package com.verzel.challenge.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.verzel.challenge.dto.pipefy.*;
+import com.verzel.challenge.mapper.LeadMapper;
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
@@ -114,10 +118,71 @@ public class PipefyService {
             }
         """, pipefyPipeId, phaseId,
                 emailId, email);
-        return performRequest(mutation,String.class);
+        String response = performRequest(mutation,String.class);
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(response);
+            return root.path("data").path("createCard").path("card").path("id").asText();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Erro ao extrair ID do Card Criado", e);
+        }
     }
 
-    private Optional<Card> getCardByEmail(String email) {
+    // Post é Idempotent então é tranquilo fazer isso
+    public boolean updateCardFields(String cardId, String nome, String email, String company, String necessidade, Boolean interesse, String meetingLink) {
+        Optional<Card> cardExists = this.getCardByEmail(email);
+
+        String nomeId = fieldMap.get("Nome");
+        String emailId = fieldMap.get("E-mail");
+        String companyId = fieldMap.get("Empresa");
+        String necessidadeId = fieldMap.get("Necessidade");
+        String meetingId = fieldMap.get("Link da Reunião");
+        String interesseId = fieldMap.get("Interessado");
+
+        String interesseValue = "null";
+        if (Boolean.TRUE.equals(interesse)) {
+            interesseValue = "\"Sim\"";
+        } else if (Boolean.FALSE.equals(interesse)){
+            interesseValue = "\"Não\"";
+        }
+
+        String mutation = String.format("""
+                    mutation {
+                      updateFieldsValues(input:{
+                        nodeId: "%s"
+                        values:[{ fieldId: "%s", value: "%s" },
+                              { fieldId: "%s", value: "%s" },
+                              { fieldId: "%s", value: "%s" },
+                              { fieldId: "%s", value: "%s" },
+                              { fieldId: "%s", value: "%s" },
+                              { fieldId: "%s", value: %s }]
+                      })
+                      {
+                        success
+                      }
+                    }
+                """,cardId,
+                nomeId, checkIfNull(nome),
+                emailId, checkIfNull(email),
+                companyId, checkIfNull(company),
+                necessidadeId, checkIfNull(necessidade),
+                meetingId, meetingLink,
+                interesseId, interesseValue);
+
+        UpdateFieldsResponse response = performRequest(mutation, UpdateFieldsResponse.class);
+        return response != null &&
+                response.data != null &&
+                response.data.updateFieldsValues != null &&
+                response.data.updateFieldsValues.success;
+    }
+
+    public Lead getUserLeadByEmail(String email){
+        Optional<Card> card = this.getCardByEmail(email);
+        if(card.isEmpty()) throw new EntityNotFoundException("Card não encontrado!");
+        return LeadMapper.toLead(card.get());
+    }
+
+    public Optional<Card> getCardByEmail(String email) {
         String emailFieldId = fieldMap.get("E-mail");
         if (emailFieldId == null) throw new IllegalStateException("Campo 'E-mail' não encontrado.");
 
@@ -138,61 +203,25 @@ public class PipefyService {
             }
         """, pipefyPipeId, emailFieldId, email);
 
-        try {
-            FindCardResponse response = performRequest(query, FindCardResponse.class);
-            if (response != null &&
-                    response.data != null &&
-                    response.data.findCards != null &&
-                    !response.data.findCards.edges.isEmpty()) {
-                return Optional.of(response.data.findCards.edges.getFirst().node);
-            } else {
-                throw new EntityNotFoundException("Card não encontrado no Pipefy");
-            }
-        } catch (Exception e) {
-            System.err.println("Erro ao buscar card: " + e.getMessage());
+        FindCardResponse response = performRequest(query, FindCardResponse.class);
+        if (response != null &&
+                response.data != null &&
+                response.data.findCards != null &&
+                !response.data.findCards.edges.isEmpty()) {
+            return Optional.of(response.data.findCards.edges.getFirst().node);
+        } else {
             return Optional.empty();
         }
     }
 
-    // Post é Idempotent então é tranquilo fazer isso
-    public boolean updateCardFields(String cardId, String nome, String email, String company, String necessidade, Boolean interesse, String meetingLink) {
-        Optional<Card> cardExists = this.getCardByEmail(email);
-
-        String nomeId = fieldMap.get("Nome");
-        String emailId = fieldMap.get("E-mail");
-        String companyId = fieldMap.get("Empresa");
-        String necessidadeId = fieldMap.get("Necessidade");
-        String meetingId = fieldMap.get("Link da Reunião");
-        String interesseId = fieldMap.get("Interessado");
-
-        String mutation = String.format("""
-                    mutation {
-                      updateFieldsValues(input:{
-                        nodeId: "%s"
-                        values:[{ field_id: "%s", field_value: "%s" },
-                              { field_id: "%s", field_value: "%s" },
-                              { field_id: "%s", field_value: "%s" },
-                              { field_id: "%s", field_value: "%s" },
-                              { field_id: "%s", field_value: "%s" },
-                              { field_id: "%s", field_value: "%s" }]
-                      })
-                      {
-                        success
-                      }
-                    }
-                """,cardId,
-                nomeId, nome,
-                emailId, email,
-                companyId, company,
-                necessidadeId, necessidade,
-                meetingId, meetingLink,
-                interesseId, interesse ? "Sim" : "Não");
-
-        UpdateFieldsResponse response = performRequest(mutation, UpdateFieldsResponse.class);
-        return response != null &&
-                response.data != null &&
-                response.data.updateFieldsValues != null &&
-                response.data.updateFieldsValues.success;
+    private String checkIfNull(String value){
+        if(value == null){
+            return "";
+        }
+        if (value.equalsIgnoreCase("null")){
+            return "";
+        }
+        return value;
     }
 
 }

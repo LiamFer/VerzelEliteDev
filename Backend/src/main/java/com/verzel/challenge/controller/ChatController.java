@@ -1,32 +1,46 @@
 package com.verzel.challenge.controller;
 
+import com.verzel.challenge.dto.chat.AIResponseDTO;
+import com.verzel.challenge.dto.chat.MessageDTO;
 import com.verzel.challenge.service.CalendlyService;
+import com.verzel.challenge.service.ChatService;
+import com.verzel.challenge.service.OpenAIService;
 import com.verzel.challenge.service.PipefyService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController()
 @RequestMapping("/chat")
 public class ChatController {
-    private final PipefyService pipefyService;
-    private final CalendlyService calendlyService;
+    private final ChatService chatService;
 
-    public ChatController(PipefyService pipefyService, CalendlyService calendlyService) {
-        this.pipefyService = pipefyService;
-        this.calendlyService = calendlyService;
+    public ChatController(ChatService chatService) {
+        this.chatService = chatService;
     }
 
-    @GetMapping("/message")
-    public ResponseEntity<?> sendChatMessage(){
-        String ans = pipefyService.createCard("adolfo","adolfo23@email.com","grv","AJuda no Business",true,"linkzao do google");
-        return ResponseEntity.ok(pipefyService.updateCardFields("1242194202",false,"fre fray"));
+    @PostMapping("/message")
+    public ResponseEntity<AIResponseDTO> sendChatMessage(@RequestBody @Valid MessageDTO userMessage,
+                                                         @CookieValue(value = "sessionId", required = true) String sessionId) {
+        return ResponseEntity.ok(chatService.handleMessage(userMessage, sessionId));
     }
 
-    @GetMapping("/calendly")
-    public ResponseEntity<?> testCalendly(){
-        return ResponseEntity.ok(calendlyService.getAvailableSlots());
-    }
+//    @GetMapping("/message")
+//    public ResponseEntity<?> sendChatMessage(){
+//        return ResponseEntity.ok(pipefyService.getUserLeadByEmail("adolfo23@email.com"));
+//    }
+
+//    @GetMapping("/message")
+//    public ResponseEntity<?> sendChatMessage(){
+//        String ans = pipefyService.createCard("adolfo","adolfo23@email.com","grv","AJuda no Business",true,"linkzao do google");
+//        return ResponseEntity.ok(pipefyService.updateCardFields("1242194202",false,"fre fray"));
+//    }
+
+//    @GetMapping("/calendly")
+//    public ResponseEntity<?> testCalendly(){
+//        return ResponseEntity.ok(calendlyService.getAvailableSlots());
+//    }
 }

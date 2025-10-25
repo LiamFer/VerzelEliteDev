@@ -33,7 +33,7 @@ public class CalendlyService {
         getEventTypeUri();
     }
 
-    public void getUserUri() {
+    private void getUserUri() {
         String response = webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/users/me").build())
@@ -50,8 +50,7 @@ public class CalendlyService {
         }
     }
 
-    public void getEventTypeUri() {
-        // Usa o userUri para buscar os event types do usuário
+    private void getEventTypeUri() {
         String response = webClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/event_types")
