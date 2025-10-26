@@ -8,6 +8,11 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -61,7 +66,6 @@ public class PipefyService {
                     phaseMap.put(p.name, p.id);
                 }
             }
-
             System.out.println("Phases carregadas: " + phaseMap);
         } catch (Exception e) {
             System.err.println("Erro ao carregar phases: " + e.getMessage());
@@ -127,12 +131,13 @@ public class PipefyService {
     }
 
     // Post é Idempotent então é tranquilo fazer isso
-    public boolean updateCardFields(String cardId, String nome, String email, String company, String necessidade, Boolean interesse, String meetingLink) {
+    public boolean updateCardFields(String cardId, String nome, String email, String company, String necessidade, Boolean interesse, String meetingLink, String meetingTimeUtc) {
         String nomeId = fieldMap.get("Nome");
         String emailId = fieldMap.get("E-mail");
         String companyId = fieldMap.get("Empresa");
         String necessidadeId = fieldMap.get("Necessidade");
         String meetingId = fieldMap.get("Link da Reunião");
+        String meetingTimeId = fieldMap.get("Hora da Reunião");
         String interesseId = fieldMap.get("Interessado");
 
         String interesseValue = "null";
@@ -140,6 +145,13 @@ public class PipefyService {
             interesseValue = "\"Sim\"";
         } else if (Boolean.FALSE.equals(interesse)){
             interesseValue = "\"Não\"";
+        }
+
+        String meetingTimeValue = "null";
+        if (meetingTimeUtc != null) {
+            Instant utcInstant = Instant.parse(meetingTimeUtc);
+            ZonedDateTime spTime = utcInstant.atZone(ZoneId.of("America/Sao_Paulo"));
+            meetingTimeValue = "\"" + spTime.toLocalDateTime().toString() + "\"";
         }
 
         String mutation = String.format("""
@@ -151,6 +163,7 @@ public class PipefyService {
                               { fieldId: "%s", value: "%s" },
                               { fieldId: "%s", value: "%s" },
                               { fieldId: "%s", value: "%s" },
+                              { fieldId: "%s", value: %s },
                               { fieldId: "%s", value: %s }]
                       })
                       {
@@ -163,7 +176,9 @@ public class PipefyService {
                 companyId, checkIfNull(company),
                 necessidadeId, checkIfNull(necessidade),
                 meetingId, meetingLink,
-                interesseId, interesseValue);
+                interesseId, interesseValue,
+                meetingTimeId, meetingTimeValue
+                );
 
         UpdateFieldsResponse response = performRequest(mutation, UpdateFieldsResponse.class);
         return response != null &&

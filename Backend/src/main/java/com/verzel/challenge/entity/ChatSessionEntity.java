@@ -35,7 +35,7 @@ public class ChatSessionEntity {
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL)
     private List<MessageEntity> messages;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "lead_id")
     private LeadEntity lead;
 

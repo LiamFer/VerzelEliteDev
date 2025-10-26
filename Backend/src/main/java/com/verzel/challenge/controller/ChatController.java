@@ -1,18 +1,16 @@
 package com.verzel.challenge.controller;
 
-import com.verzel.challenge.dto.chat.AIResponseDTO;
 import com.verzel.challenge.dto.chat.MessageDTO;
 import com.verzel.challenge.dto.chat.ResponseDTO;
-import com.verzel.challenge.service.CalendlyService;
 import com.verzel.challenge.service.ChatService;
-import com.verzel.challenge.service.OpenAIService;
-import com.verzel.challenge.service.PipefyService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.util.UUID;
+
 
 @RestController()
 @RequestMapping("/chat")
@@ -24,24 +22,21 @@ public class ChatController {
     }
 
     @PostMapping("/message")
-    public ResponseEntity<ResponseDTO> sendChatMessage(@RequestBody @Valid MessageDTO userMessage,
-                                                       @CookieValue(value = "sessionId", required = true) String sessionId) {
-        return ResponseEntity.ok(chatService.handleMessage(userMessage, sessionId));
+    public ResponseEntity<ResponseDTO> sendChatMessage(
+            @RequestBody @Valid MessageDTO userMessage,
+            @CookieValue(value = "sessionId", required = false) String sessionId,
+            HttpServletResponse response
+    ) {
+        if (sessionId == null || sessionId.isEmpty()) {
+            sessionId = UUID.randomUUID().toString();
+            Cookie cookie = new Cookie("sessionId", sessionId);
+            cookie.setHttpOnly(true);
+            cookie.setPath("/");
+            cookie.setMaxAge(30 * 60);
+            response.addCookie(cookie);
+        }
+        ResponseDTO chatResponse = chatService.handleMessage(userMessage, sessionId);
+        return ResponseEntity.ok(chatResponse);
     }
 
-//    @GetMapping("/message")
-//    public ResponseEntity<?> sendChatMessage(){
-//        return ResponseEntity.ok(pipefyService.getUserLeadByEmail("adolfo23@email.com"));
-//    }
-
-//    @GetMapping("/message")
-//    public ResponseEntity<?> sendChatMessage(){
-//        String ans = pipefyService.createCard("adolfo","adolfo23@email.com","grv","AJuda no Business",true,"linkzao do google");
-//        return ResponseEntity.ok(pipefyService.updateCardFields("1242194202",false,"fre fray"));
-//    }
-
-//    @GetMapping("/calendly")
-//    public ResponseEntity<?> testCalendly(){
-//        return ResponseEntity.ok(calendlyService.getAvailableSlots());
-//    }
 }

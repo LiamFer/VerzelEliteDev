@@ -1,11 +1,9 @@
 package com.verzel.challenge.service;
 
 import com.verzel.challenge.dto.calendly.WebhookPayload;
-import com.verzel.challenge.dto.chat.AIResponseBodyDTO;
 import com.verzel.challenge.dto.chat.AIResponseDTO;
 import com.verzel.challenge.dto.chat.MessageDTO;
 import com.verzel.challenge.dto.chat.ResponseDTO;
-import com.verzel.challenge.dto.pipefy.Card;
 import com.verzel.challenge.dto.pipefy.Lead;
 import com.verzel.challenge.entity.ChatSessionEntity;
 import com.verzel.challenge.entity.LeadEntity;
@@ -18,6 +16,7 @@ import com.verzel.challenge.type.ActionAI;
 import com.verzel.challenge.type.ResponseAction;
 import com.verzel.challenge.type.Sender;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -53,10 +52,9 @@ public class ChatService {
     };
 
     public void scheduleMeeting(WebhookPayload payload){
-        System.out.println(payload);
         String email = payload.getInviteeEmail();
         String meetingLink = payload.getMeetingLink();
-
+        System.out.println(payload.getScheduled_event().getStart_time());
         LeadEntity lead = leadRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new EntityNotFoundException("Lead não encontrado no Webhook"));
 
@@ -69,7 +67,8 @@ public class ChatService {
                 lead.getCompany(),
                 lead.getNecessity(),
                 lead.getInterested(),
-                meetingLink
+                meetingLink,
+                payload.getScheduled_event().getStart_time()
         );
     }
 
@@ -101,15 +100,17 @@ public class ChatService {
 
         // Card não existe no Pipefy e tenho o E-mail possibilitando assim a criação
         if(databaseLead == null && assistantLead.getEmail() != null){
-            LeadEntity newLead = new LeadEntity(assistantLead.getEmail());
-            String cardId = pipefyService.createCardWithEmail(assistantLead.getEmail());
-            newLead.setCardId(cardId);
-            leadRepository.save(newLead);
-            chat.setLead(newLead);
+            // Verifico se já existe um Lead com esse email, caso tenha trocado de Sessão
+            databaseLead = leadRepository.findByEmailIgnoreCase(assistantLead.getEmail())
+                    .orElseGet(() -> {
+                        LeadEntity newLead = new LeadEntity(assistantLead.getEmail());
+                        String cardId = pipefyService.createCardWithEmail(assistantLead.getEmail());
+                        newLead.setCardId(cardId);
+                        return leadRepository.save(newLead);
+                    });
+            chat.setLead(databaseLead);
             chatSessionRepository.save(chat);
-            databaseLead = newLead;
         }
-
         // Lead existe e eu só atualizo ele
         if(databaseLead != null){
             databaseLead.setName(assistantLead.getNome());
@@ -117,10 +118,11 @@ public class ChatService {
             databaseLead.setCompany(assistantLead.getEmpresa());
             databaseLead.setNecessity(assistantLead.getNecessidade());
             databaseLead.setInterested(assistantLead.getInteresse());
-            pipefyService.updateCardFields(databaseLead.getCardId(), assistantLead.getNome(), assistantLead.getEmail(), assistantLead.getEmpresa(), assistantLead.getNecessidade(), assistantLead.getInteresse(),"");
+            pipefyService.updateCardFields(databaseLead.getCardId(), assistantLead.getNome(), assistantLead.getEmail(), assistantLead.getEmpresa(), assistantLead.getNecessidade(), assistantLead.getInteresse(),"",null);
             leadRepository.save(databaseLead);
         }
     }
+
 
     private void storeMessages(ChatSessionEntity chat, MessageDTO userMessage,String assistantMessage){
         messageRepository.save(new MessageEntity(Sender.USER, userMessage.message(),chat));
