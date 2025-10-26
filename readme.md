@@ -1,85 +1,121 @@
-# Nome do Projeto
+# 🤖 Chatbot de Qualificação de Leads
 
-Breve descrição do que este projeto faz.
+Este projeto é um assistente de vendas (SDR) virtual construído com Spring Boot. Ele utiliza a API da OpenAI para interagir com potenciais clientes, qualificá-los e, se houver interesse, oferecer horários para uma reunião via Calendly. Todas as interações e dados dos leads são sincronizados com um funil de vendas no Pipefy.
 
-## Setup
+## ✨ Tecnologias Utilizadas
 
-Esta seção descreve os passos necessários para configurar e rodar o projeto localmente.
+- **Backend**: Java 17, Spring Boot 3
+- **Comunicação**: WebSockets (com STOMP)
+- **Banco de Dados**: PostgreSQL
+- **IA**: OpenAI (GPT-4o-mini)
+- **Agendamento**: Calendly API
+- **CRM/Funil**: Pipefy API
+- **Build**: Maven
 
-### Backend
+## ⚙️ Setup do Projeto
 
-Para configurar o ambiente de backend, você precisará definir as seguintes variáveis de ambiente. Recomenda-se criar um arquivo `application.properties` na pasta `src/main/resources` e preencher com os seguintes valores:
+Siga os passos abaixo para configurar e executar o projeto em seu ambiente local.
 
-#### URL do frontend
-- **`FRONTEND_URL`**:
-  - *Descrição*: URL base de onde está rodando seu aplicativo frontend. Usado para permitir requisições (CORS).
-  - *Exemplo*: http://localhost:8080/
+### 1. Pré-requisitos
 
-#### Database
-- **`SPRING_DATASOURCE_URL`**:
-  - *Descrição*: Credenciais de acesso ao seu banco de dados PostgreSQL.
-  - *Preencher com*: Crie uma conta no site https://neon.com/ e crie um projeto lá, clique em Connect e selecione a Opção Java de connection String, copie ela e cole aqui.
+Antes de começar, garanta que você tenha:
+- ✅ Java 17 (ou superior) instalado.
+- ✅ Maven instalado.
+- ✅ Conta no Pipefy, Calendly, OpenAI e Neon (ou outro provedor de PostgreSQL).
+- ✅ Ngrok instalado para expor sua aplicação localmente.
 
+### 2. Variáveis de Ambiente
 
-#### Pipefy
-- **`CONFIGURAÇÃO DO PIPE`**:
-    Você vai criar um Pipe na Opção **Criar Pipe do Zero** com o Nome de **"Pŕe-Vendas"** e uma Fase dentro dele com o nome de **"Pré-Vendas"**, após isso você deve clicar em **+ Criar Novo Card** e criar um Card com os campos a seguir com o **MESMO NOME E TIPO DE CAMPO**:
-![NomeField](tutorial/NomeField.png)
-![EmailField](tutorial/EmailField.png)
-![EmpresaField](tutorial/EmpresaField.png)
-![NecessidadeField](tutorial/NecessidadeField.png)
-![InteressadoField](tutorial/InteressadoField.png)
-![MeetingLink](tutorial/MeetingLink.png)
-![MeetingDate](tutorial/MeetingDate.png)
+O backend precisa de algumas chaves de API e URLs para funcionar. Você pode configurá-las como variáveis de ambiente no seu sistema ou diretamente na sua IDE.
 
-### É importante na tela de Criação do Card você clicar  em **Configurações do Pipe** e escolher o Campo Título do Card como E-mail! Seu Card no final deve parecer com isso:
+| Variável            | Descrição                                                              | Exemplo                                                              |
+|---------------------|------------------------------------------------------------------------|----------------------------------------------------------------------|
+| `FRONTEND_URL`      | URL do frontend para permitir CORS.                                    | `http://localhost:5173`                                              |
+| `DB_URL`            | Connection string do seu banco de dados PostgreSQL.                    | `jdbc:postgresql://...`                                              |
+| `PIPEFY_TOKEN`      | Token de API pessoal do Pipefy.                                        | `eyJhbGciOi...`                                                      |
+| `PIPEFY_PIPE_ID`    | ID do seu pipe de "Pré-Vendas" no Pipefy.                              | `306752893`                                                          |
+| `CALENDLY_TOKEN`    | Token de API pessoal do Calendly.                                      | `eyJraWQiOi...`                                                      |
+| `CALENDLY_CALLBACK` | URL de webhook (via Ngrok) para receber eventos do Calendly.           | `https://seu-dominio.ngrok-free.dev/calendly/webhook`                |
+| `OPENAI_TOKEN`      | Chave de API da OpenAI.                                                | `sk-proj-...`                                                        |
 
-![MeetingDate](tutorial/PipefyCard.png)
+### 3. Configuração dos Serviços Externos
 
+#### 📦 Pipefy
 
-- **`PIPEFY_TOKEN`**:
-  - *Descrição*: Token de API e ID do Pipe no Pipefy para integração.
-  - *Preencher com*: Crie uma Conta no Pipefy e gere seu token aqui https://app.pipefy.com/tokens.
+1.  Crie um novo Pipe com o nome **"Pré-Vendas"**.
+2.  Dentro do pipe, crie uma fase chamada **"Pré-Vendas"**.
+3.  Clique em **"+ Criar novo card"** e adicione os seguintes campos, **respeitando exatamente os nomes e tipos**:
 
-- **`PIPEFY_PIPE_ID`**:
-  - *Preencher com*: É o ID do Pipe de Pré-Vendas que você criou, você consegue pegar ele na URL do Pipe que você criou ele é esse número aqui.
+    - **Nome**: `Texto curto`
+    ![NomeField](tutorial/NomeField.png)
 
+    - **E-mail**: `E-mail`
+    ![EmailField](tutorial/EmailField.png)
+
+    - **Empresa**: `Texto curto`
+    ![EmpresaField](tutorial/EmpresaField.png)
+
+    - **Necessidade**: `Texto longo`
+    ![NecessidadeField](tutorial/NecessidadeField.png)
+
+    - **Interessado**: `Seleção de lista` com as opções "Sim" e "Não".
+    ![InteressadoField](tutorial/InteressadoField.png)
+    - **Link da Reunião**: `Texto Longo`
+    ![MeetingLink](tutorial/MeetingLink.png)
+    - **Hora da Reunião**: `Data e Hora`
+    ![MeetingDate](tutorial/MeetingDate.png)
+
+4.  Vá em **"Configurações do Pipe"** e defina o campo **"E-mail"** como o título do card, o seu Card ao final deve ficar parecido com isso:
+    ![MeetingDate](tutorial/PipefyCard.png)
+
+5.  Obtenha seu **Token de API** em https://app.pipefy.com/tokens.
+6.  O **PIPEFY_PIPE_ID** pode ser encontrado na URL do seu pipe.
     ![PIPEFY_PIPE_ID](tutorial/pipeID.png)
 
+#### 📅 Calendly
 
-#### Calendly
-- **`CALENDLY_TOKEN`**:
-  - *Descrição*: Token de API do Calendly.
-  - *Preencher com*: Você vai precisar criar uma conta no Calendly, conectar ela com o Google Calendar (vai ter essa opção enquanto você estiver criando a conta), o tempo no Scheduling eu deixei assim (8:00 as 17:00):
-
+1.  Crie uma conta e conecte-a ao seu Google Calendar.
+2.  Configure seus horários de disponibilidade (ex: 8:00 às 17:00).
     ![Scheduling](tutorial/Scheduling.png)
+3.  Vá para **"Integrations & Apps"** > **"API & Webhooks"** para gerar seu **CALENDLY_TOKEN**.
+4.  Para o `CALENDLY_CALLBACK`, você precisará instalar o Ngrok https://ngrok.com/download/windows:
+    - Autentique-se no Ngrok (só precisa fazer uma vez):
+      ```sh
+      ngrok config add-authtoken SEU_AUTH_TOKEN_AQUI
+      ```
+    - Inicie o Ngrok para expor a porta da sua aplicação (padrão: 3000):
+      ```sh
+      ngrok http 3000
+      ```
+    - O Ngrok fornecerá uma URL pública (ex: `https://xxxx.ngrok-free.dev`). Use essa URL para montar seu `CALENDLY_CALLBACK`, adicionando o endpoint do webhook: `https://xxxx.ngrok-free.dev/calendly/webhook`.
 
-    Depois basta você ir em **Integrations & Apps** https://calendly.com/integrations/api_webhooks e criar seu Token e usar ele aqui.
+#### 🐘 PostgreSQL (Neon)
 
-- **`CALENDLY_CALLBACK`**:
-  - *Descrição*: URL de callback do seu backend para receber webhooks.
-  - *Preencher com*: Para usar localmente você precisará instalar o **NGROK** https://ngrok.com/download/windows, criar uma conta e pegar seu **AuthToken** no site deles, abrir o terminal e rodar
+1.  Crie uma conta gratuita no Neon https://neon.com/.
+2.  Crie um novo projeto.
+3.  Na dashboard do projeto, vá para a seção **"Connection Details"**.
+4.  Copie a **Connection String** no formato Java e use-a para a variável `DB_URL`.
 
-    ```sh
-    ngrok config add-authtoken $SEU_AUTHTOKEN
-    ngrok http $PORTA_QUE_QUER_USAR
-    ```
-    ele vai te devolver algo assim:
-    ```sh
-     https://jeromy-uncheating-unornately.ngrok-free.dev
-    ```
-    ai basta colocar no **CALENDLY_CALLBACK**:
-    ```sh
-     https://jeromy-uncheating-unornately.ngrok-free.dev/calendly/webhook
-    ```
+#### 🧠 OpenAI
 
+1.  Crie uma conta na OpenAI.
+2.  Vá para a seção **"API Keys"** e crie uma nova chave secreta.
 
+### 4. Como Rodar a Aplicação
 
-#### OpenAI
-- **`OPENAI_TOKEN`**:
-  - *Descrição*: Chave de API da OpenAI para acessar os modelos de linguagem.
-  - *Preencher com*: Basta ter uma conta na OpenAI e criar uma chave e usar ela aqui.
+Após configurar todas as variáveis de ambiente, você pode iniciar o backend:
 
-### Frontend
+```bash
+# Navegue até a pasta do backend
+cd Backend
+
+# Execute a aplicação com o Maven
+./mvnw spring-boot:run
+```
+
+A aplicação estará rodando em `http://localhost:3000`.
+
+## Frontend
 
 *(Instruções de configuração do frontend a serem adicionadas aqui.)*
+
