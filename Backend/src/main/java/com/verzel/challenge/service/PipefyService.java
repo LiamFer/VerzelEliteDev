@@ -108,14 +108,14 @@ public class PipefyService {
      * Cria um card no Pipefy com o e-mail do lead.
      * <p>
      * Este método é idempotente. Se um card com o e-mail fornecido já existir, ele retorna o ID do card existente.
-     * Caso contrário, cria um novo card na fase "Novo Lead".
+     * Caso contrário, cria um novo card na fase "Pré-Vendas".
      * @param email O e-mail do lead para criar o card.
      * @return O ID do card do Pipefy, seja ele novo ou existente.
-     * @throws IllegalStateException se a fase "Novo Lead" não for encontrada na configuração do pipe.
+     * @throws IllegalStateException se a fase "Pré-Vendas" não for encontrada na configuração do pipe.
      */
     public String createCardWithEmail(String email) {
-        String phaseId = phaseMap.get("Novo Lead");
-        if (phaseId == null) throw new IllegalStateException("Fase 'Novo Lead' não encontrada.");
+        String phaseId = phaseMap.get("Pré-Vendas");
+        if (phaseId == null) throw new IllegalStateException("Fase 'Pré-Vendas' não encontrada.");
 
         Optional<Card> alreadyExists = this.getCardByEmail(email);
         if(alreadyExists.isPresent()) return alreadyExists.get().id;
