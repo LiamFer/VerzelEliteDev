@@ -17,9 +17,11 @@ import com.verzel.challenge.type.ResponseAction;
 import com.verzel.challenge.type.Sender;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -30,14 +32,16 @@ public class ChatService {
     private final ChatSessionRepository chatSessionRepository;
     private final LeadRepository leadRepository;
     private final MessageRepository messageRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
-    public ChatService(OpenAIService openAIService, PipefyService pipefyService, CalendlyService calendlyService, ChatSessionRepository chatSessionRepository, LeadRepository leadRepository, MessageRepository messageRepository) {
+    public ChatService(OpenAIService openAIService, PipefyService pipefyService, CalendlyService calendlyService, ChatSessionRepository chatSessionRepository, LeadRepository leadRepository, MessageRepository messageRepository, SimpMessagingTemplate messagingTemplate) {
         this.openAIService = openAIService;
         this.pipefyService = pipefyService;
         this.calendlyService = calendlyService;
         this.chatSessionRepository = chatSessionRepository;
         this.leadRepository = leadRepository;
         this.messageRepository = messageRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     public ResponseDTO handleMessage(MessageDTO userMessage, String sessionId){
@@ -54,22 +58,30 @@ public class ChatService {
     public void scheduleMeeting(WebhookPayload payload){
         String email = payload.getInviteeEmail();
         String meetingLink = payload.getMeetingLink();
-        System.out.println(payload.getScheduled_event().getStart_time());
         LeadEntity lead = leadRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new EntityNotFoundException("Lead não encontrado no Webhook"));
+        boolean differentMeetingLink = !Objects.equals(lead.getMeetingLink(), meetingLink);
 
         lead.setMeetingLink(meetingLink);
         leadRepository.save(lead);
-        pipefyService.updateCardFields(
+        pipefyService.updateCardMeetingFields(
                 lead.getCardId(),
-                lead.getName(),
-                lead.getEmail(),
-                lead.getCompany(),
-                lead.getNecessity(),
-                lead.getInterested(),
                 meetingLink,
                 payload.getScheduled_event().getStart_time()
         );
+
+        ChatSessionEntity lastChat = chatSessionRepository
+                .findFirstByLeadIdOrderByLastInteractionDesc(lead.getId())
+                .orElse(null);
+
+        if (lastChat != null && differentMeetingLink) {
+            ResponseDTO response = new ResponseDTO(
+                    ResponseAction.talk,
+                    "Aqui está o link da nossa reunião " + meetingLink + ", aguardamos você lá!",
+                    ""
+            );
+            messagingTemplate.convertAndSend("/topic/" + lastChat.getSessionId(), response);
+        }
     }
 
     private ResponseDTO handleAIAction(AIResponseDTO response, ChatSessionEntity chat) {
@@ -118,11 +130,10 @@ public class ChatService {
             databaseLead.setCompany(assistantLead.getEmpresa());
             databaseLead.setNecessity(assistantLead.getNecessidade());
             databaseLead.setInterested(assistantLead.getInteresse());
-            pipefyService.updateCardFields(databaseLead.getCardId(), assistantLead.getNome(), assistantLead.getEmail(), assistantLead.getEmpresa(), assistantLead.getNecessidade(), assistantLead.getInteresse(),"",null);
+            pipefyService.updateCardFields(databaseLead.getCardId(), assistantLead.getNome(), assistantLead.getEmail(), assistantLead.getEmpresa(), assistantLead.getNecessidade(), assistantLead.getInteresse());
             leadRepository.save(databaseLead);
         }
     }
-
 
     private void storeMessages(ChatSessionEntity chat, MessageDTO userMessage,String assistantMessage){
         messageRepository.save(new MessageEntity(Sender.USER, userMessage.message(),chat));

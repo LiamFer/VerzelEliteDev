@@ -30,7 +30,7 @@ public class ChatController {
         if (sessionId == null || sessionId.isEmpty()) {
             sessionId = UUID.randomUUID().toString();
             Cookie cookie = new Cookie("sessionId", sessionId);
-            cookie.setHttpOnly(true);
+            cookie.setHttpOnly(false);
             cookie.setPath("/");
             cookie.setMaxAge(30 * 60);
             response.addCookie(cookie);

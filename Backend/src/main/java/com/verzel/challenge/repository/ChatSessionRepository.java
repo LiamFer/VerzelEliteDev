@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ChatSessionRepository extends JpaRepository<ChatSessionEntity,Long> {
     Optional<ChatSessionEntity> findBySessionId(String sessionId);
+    Optional<ChatSessionEntity> findFirstByLeadIdOrderByLastInteractionDesc(Long leadId);
 }

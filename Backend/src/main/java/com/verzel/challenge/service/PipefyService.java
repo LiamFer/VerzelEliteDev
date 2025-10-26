@@ -131,13 +131,11 @@ public class PipefyService {
     }
 
     // Post é Idempotent então é tranquilo fazer isso
-    public boolean updateCardFields(String cardId, String nome, String email, String company, String necessidade, Boolean interesse, String meetingLink, String meetingTimeUtc) {
+    public boolean updateCardFields(String cardId, String nome, String email, String company, String necessidade, Boolean interesse) {
         String nomeId = fieldMap.get("Nome");
         String emailId = fieldMap.get("E-mail");
         String companyId = fieldMap.get("Empresa");
         String necessidadeId = fieldMap.get("Necessidade");
-        String meetingId = fieldMap.get("Link da Reunião");
-        String meetingTimeId = fieldMap.get("Hora da Reunião");
         String interesseId = fieldMap.get("Interessado");
 
         String interesseValue = "null";
@@ -145,13 +143,6 @@ public class PipefyService {
             interesseValue = "\"Sim\"";
         } else if (Boolean.FALSE.equals(interesse)){
             interesseValue = "\"Não\"";
-        }
-
-        String meetingTimeValue = "null";
-        if (meetingTimeUtc != null) {
-            Instant utcInstant = Instant.parse(meetingTimeUtc);
-            ZonedDateTime spTime = utcInstant.atZone(ZoneId.of("America/Sao_Paulo"));
-            meetingTimeValue = "\"" + spTime.toLocalDateTime().toString() + "\"";
         }
 
         String mutation = String.format("""
@@ -162,8 +153,6 @@ public class PipefyService {
                               { fieldId: "%s", value: "%s" },
                               { fieldId: "%s", value: "%s" },
                               { fieldId: "%s", value: "%s" },
-                              { fieldId: "%s", value: "%s" },
-                              { fieldId: "%s", value: %s },
                               { fieldId: "%s", value: %s }]
                       })
                       {
@@ -175,16 +164,47 @@ public class PipefyService {
                 emailId, checkIfNull(email),
                 companyId, checkIfNull(company),
                 necessidadeId, checkIfNull(necessidade),
-                meetingId, meetingLink,
-                interesseId, interesseValue,
-                meetingTimeId, meetingTimeValue
+                interesseId, interesseValue
                 );
+
+        // Caso ele não queira mais eu limpo o campo da Reunião
+        if(Boolean.FALSE.equals(interesse)){
+            updateCardMeetingFields(cardId,"",null);
+        }
 
         UpdateFieldsResponse response = performRequest(mutation, UpdateFieldsResponse.class);
         return response != null &&
                 response.data != null &&
                 response.data.updateFieldsValues != null &&
                 response.data.updateFieldsValues.success;
+    }
+
+    public void updateCardMeetingFields(String cardId,String meetingLink, String meetingTimeUtc) {
+        String meetingId = fieldMap.get("Link da Reunião");
+        String meetingTimeId = fieldMap.get("Hora da Reunião");
+        String meetingTimeValue = "null";
+        if (meetingTimeUtc != null) {
+            Instant utcInstant = Instant.parse(meetingTimeUtc);
+            ZonedDateTime spTime = utcInstant.atZone(ZoneId.of("America/Sao_Paulo"));
+            meetingTimeValue = "\"" + spTime.toLocalDateTime().toString() + "\"";
+        }
+        String mutation = String.format("""
+                    mutation {
+                      updateFieldsValues(input:{
+                        nodeId: "%s"
+                        values:[
+                              { fieldId: "%s", value: "%s" },
+                              { fieldId: "%s", value: %s }]
+                      })
+                      {
+                        success
+                      }
+                    }
+                """,cardId,
+                meetingId, meetingLink,
+                meetingTimeId, meetingTimeValue
+        );
+        UpdateFieldsResponse response = performRequest(mutation, UpdateFieldsResponse.class);
     }
 
     public Optional<Card> getCardByEmail(String email) {

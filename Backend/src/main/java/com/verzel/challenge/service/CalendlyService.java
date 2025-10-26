@@ -111,7 +111,7 @@ public class CalendlyService {
         List<Map<String, Object>> slots = Collections.emptyList();
 
         while (slots.size() < 2) {
-            OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC).plusDays(7 + offset);
+            OffsetDateTime start = OffsetDateTime.now(ZoneOffset.UTC).plusDays(1 + offset);
             OffsetDateTime end = start.plusDays(6);
 
             Map response = webClient.get()

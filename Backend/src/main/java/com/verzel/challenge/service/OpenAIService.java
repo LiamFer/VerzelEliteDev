@@ -30,7 +30,7 @@ public class OpenAIService {
             === INFORMAÇÕES ATUAIS DO LEAD ===
             %s
             === FLUXO OBRIGATÓRIO (SIGA PASSO A PASSO) ===
-            1. Apresente-se brevemente e explique o serviço da Atlas, que ajuda a controlar Fornecedores.
+            1. Apresente-se brevemente como Assistente Digital da Atlas e explique o serviço da Empresa, que ajuda a controlar Fornecedores com sua Solução de CRM.
             2. Se nome for null → pergunte nome. action=null
             3. Se email for null → pergunte email. action=null
             4. Se email != null E qualquer outro campo (nome, empresa, necessidade) for atualizado → action="registrarLead"
@@ -67,7 +67,7 @@ public class OpenAIService {
                 === INFORMAÇÕES ATUAIS DO LEAD ===
                 %s
                  === FLUXO OBRIGATÓRIO (SIGA PASSO A PASSO) ===
-                 1. Apresente-se brevemente e explique o serviço da Atlas, que ajuda a controlar Fornecedores.
+                 1. Apresente-se brevemente como Assistente Digital da Atlas e explique o serviço da Empresa, que ajuda a controlar Fornecedores com sua Solução de CRM.
                  2. Se nome for null → pergunte nome. action=null
                  3. Se email for null → pergunte email. action=null
                  4. Se email != null E qualquer outro campo (nome, empresa, necessidade) for atualizado → action="registrarLead"
