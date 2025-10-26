@@ -4,9 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.verzel.challenge.dto.pipefy.*;
-import com.verzel.challenge.mapper.LeadMapper;
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -130,8 +128,6 @@ public class PipefyService {
 
     // Post é Idempotent então é tranquilo fazer isso
     public boolean updateCardFields(String cardId, String nome, String email, String company, String necessidade, Boolean interesse, String meetingLink) {
-        Optional<Card> cardExists = this.getCardByEmail(email);
-
         String nomeId = fieldMap.get("Nome");
         String emailId = fieldMap.get("E-mail");
         String companyId = fieldMap.get("Empresa");
@@ -174,12 +170,6 @@ public class PipefyService {
                 response.data != null &&
                 response.data.updateFieldsValues != null &&
                 response.data.updateFieldsValues.success;
-    }
-
-    public Lead getUserLeadByEmail(String email){
-        Optional<Card> card = this.getCardByEmail(email);
-        if(card.isEmpty()) throw new EntityNotFoundException("Card não encontrado!");
-        return LeadMapper.toLead(card.get());
     }
 
     public Optional<Card> getCardByEmail(String email) {

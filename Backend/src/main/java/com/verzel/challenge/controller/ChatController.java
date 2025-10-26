@@ -2,6 +2,7 @@ package com.verzel.challenge.controller;
 
 import com.verzel.challenge.dto.chat.AIResponseDTO;
 import com.verzel.challenge.dto.chat.MessageDTO;
+import com.verzel.challenge.dto.chat.ResponseDTO;
 import com.verzel.challenge.service.CalendlyService;
 import com.verzel.challenge.service.ChatService;
 import com.verzel.challenge.service.OpenAIService;
@@ -23,8 +24,8 @@ public class ChatController {
     }
 
     @PostMapping("/message")
-    public ResponseEntity<AIResponseDTO> sendChatMessage(@RequestBody @Valid MessageDTO userMessage,
-                                                         @CookieValue(value = "sessionId", required = true) String sessionId) {
+    public ResponseEntity<ResponseDTO> sendChatMessage(@RequestBody @Valid MessageDTO userMessage,
+                                                       @CookieValue(value = "sessionId", required = true) String sessionId) {
         return ResponseEntity.ok(chatService.handleMessage(userMessage, sessionId));
     }
 
