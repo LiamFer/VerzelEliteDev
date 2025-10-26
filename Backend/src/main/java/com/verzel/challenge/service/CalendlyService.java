@@ -36,10 +36,9 @@ public class CalendlyService {
         getUris();
         getEventTypeUri();
         createWebhook(calendlyCallback);
-
-        System.out.println("ORGANIZATION URI -> " + organizationUri);
     }
 
+    // Funções de Configuração do Calendly
     private void createWebhook(String callbackUrl) {
         Map<String, Object> body = Map.of(
                 "url", callbackUrl,
@@ -62,7 +61,6 @@ public class CalendlyService {
             }
         }
     }
-
     private void getUris() {
         String response = webClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -80,7 +78,6 @@ public class CalendlyService {
             throw new RuntimeException("Erro ao extrair userUri do Calendly", e);
         }
     }
-
     private void getEventTypeUri() {
         String response = webClient.get()
                 .uri(uriBuilder -> uriBuilder
@@ -106,6 +103,17 @@ public class CalendlyService {
         }
     }
 
+
+    /**
+     * Busca por horários de reunião disponíveis no Calendly.
+     * Este método consulta a API do Calendly para encontrar horários disponíveis,
+     * começando a partir do dia seguinte. Caso não encontre pelo menos dois horários,
+     * ele avança a busca semanalmente até encontrá-los.
+     * Retorna uma lista aleatória de até 3 horários, com a URL de agendamento
+     * modificada para pré-preencher o nome e o e-mail do lead.
+     * @param lead O lead para o qual os horários serão agendados, contendo nome e e-mail.
+     * @return Uma lista de até 3 horários disponíveis, com a URL de agendamento personalizada.
+     */
     public List<Map<String, Object>> getAvailableSlots(Lead lead) {
         int offset = 0;
         List<Map<String, Object>> slots = Collections.emptyList();

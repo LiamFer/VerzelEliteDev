@@ -23,6 +23,17 @@ public class OpenAIService {
                 .build();
     }
 
+    /**
+     * Envia uma pergunta para o assistente da OpenAI e retorna a resposta estruturada.
+     * <p>
+     * Este método constrói um prompt detalhado para o modelo de IA, incluindo o estado atual do lead,
+     * o fluxo de conversa obrigatório e as regras de negócio. Ele gerencia o contexto da conversa
+     * usando o {@code previousResponseId}.
+     * @param previousResponseId O ID da resposta anterior da IA, para manter o contexto da conversa. Pode ser nulo.
+     * @param question A pergunta/mensagem atual do usuário.
+     * @param lead O objeto {@link Lead} com os dados atuais do potencial cliente.
+     * @return Um {@link AIResponseDTO} contendo a mensagem para o usuário, os dados do lead atualizados pela IA e a ação recomendada.
+     */
     public AIResponseDTO askAssistant(String previousResponseId,String question, Lead lead){
         String leadJson = buildJson(lead);
         String systemPrompt = """
@@ -119,6 +130,14 @@ public class OpenAIService {
         return response.getResponse();
     }
 
+    /**
+     * Converte um objeto genérico para uma string JSON.
+     *
+     * @param value O objeto a ser convertido.
+     * @param <T> O tipo do objeto.
+     * @return Uma representação em string JSON do objeto.
+     * @throws RuntimeException se ocorrer um erro durante a serialização.
+     */
     private <T> String buildJson(T value) {
         ObjectMapper mapper = new ObjectMapper();
         try {

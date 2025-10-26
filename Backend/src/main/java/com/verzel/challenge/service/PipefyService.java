@@ -38,7 +38,14 @@ public class PipefyService {
         loadFields();
     }
 
-    // Minha classe Genérica para Requests
+    /**
+     * Executa uma requisição GraphQL genérica para a API do Pipefy.
+     *
+     * @param query A string da query ou mutation GraphQL a ser executada.
+     * @param responseType A classe do DTO esperado como resposta.
+     * @param <T> O tipo do DTO de resposta.
+     * @return O objeto de resposta desserializado.
+     */
     public <T> T performRequest(String query, Class<T> responseType) {
         return webClient.post()
                 .bodyValue(Map.of("query", query))
@@ -47,6 +54,7 @@ public class PipefyService {
                 .block();
     }
 
+    // Funções de Configuração do Pipefy
     private void loadPhases() {
         String query = String.format("""
             query {
@@ -96,6 +104,15 @@ public class PipefyService {
         }
     }
 
+    /**
+     * Cria um card no Pipefy com o e-mail do lead.
+     * <p>
+     * Este método é idempotente. Se um card com o e-mail fornecido já existir, ele retorna o ID do card existente.
+     * Caso contrário, cria um novo card na fase "Novo Lead".
+     * @param email O e-mail do lead para criar o card.
+     * @return O ID do card do Pipefy, seja ele novo ou existente.
+     * @throws IllegalStateException se a fase "Novo Lead" não for encontrada na configuração do pipe.
+     */
     public String createCardWithEmail(String email) {
         String phaseId = phaseMap.get("Novo Lead");
         if (phaseId == null) throw new IllegalStateException("Fase 'Novo Lead' não encontrada.");
@@ -130,7 +147,18 @@ public class PipefyService {
         }
     }
 
-    // Post é Idempotent então é tranquilo fazer isso
+    /**
+     * Atualiza os campos de um card existente no Pipefy.
+     * <p>
+     * Se o interesse for definido como {@code false}, este método também limpará os campos de agendamento de reunião.
+     * @param cardId O ID do card a ser atualizado.
+     * @param nome O nome do lead.
+     * @param email O e-mail do lead.
+     * @param company A empresa do lead.
+     * @param necessidade A necessidade do lead.
+     * @param interesse O status de interesse do lead.
+     * @return {@code true} se a atualização for bem-sucedida, {@code false} caso contrário.
+     */
     public boolean updateCardFields(String cardId, String nome, String email, String company, String necessidade, Boolean interesse) {
         String nomeId = fieldMap.get("Nome");
         String emailId = fieldMap.get("E-mail");
@@ -179,6 +207,13 @@ public class PipefyService {
                 response.data.updateFieldsValues.success;
     }
 
+    /**
+     * Atualiza os campos específicos de agendamento de reunião em um card do Pipefy.
+     *
+     * @param cardId O ID do card a ser atualizado.
+     * @param meetingLink O link da reunião agendada.
+     * @param meetingTimeUtc A data e hora da reunião em formato UTC (String).
+     */
     public void updateCardMeetingFields(String cardId,String meetingLink, String meetingTimeUtc) {
         String meetingId = fieldMap.get("Link da Reunião");
         String meetingTimeId = fieldMap.get("Hora da Reunião");
@@ -207,6 +242,13 @@ public class PipefyService {
         UpdateFieldsResponse response = performRequest(mutation, UpdateFieldsResponse.class);
     }
 
+    /**
+     * Busca um card no Pipefy pelo endereço de e-mail.
+     *
+     * @param email O e-mail a ser pesquisado.
+     * @return Um {@link Optional} contendo o {@link Card} se encontrado, ou um Optional vazio caso contrário.
+     * @throws IllegalStateException se o campo "E-mail" não for encontrado na configuração do pipe.
+     */
     public Optional<Card> getCardByEmail(String email) {
         String emailFieldId = fieldMap.get("E-mail");
         if (emailFieldId == null) throw new IllegalStateException("Campo 'E-mail' não encontrado.");

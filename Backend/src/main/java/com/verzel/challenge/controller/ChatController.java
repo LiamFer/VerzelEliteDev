@@ -27,6 +27,7 @@ public class ChatController {
             @CookieValue(value = "sessionId", required = false) String sessionId,
             HttpServletResponse response
     ) {
+        // Se não tem uma Session ID eu crio para o Usuário
         if (sessionId == null || sessionId.isEmpty()) {
             sessionId = UUID.randomUUID().toString();
             Cookie cookie = new Cookie("sessionId", sessionId);
