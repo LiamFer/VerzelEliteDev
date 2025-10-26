@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.verzel.challenge.dto.pipefy.Lead;
+import com.verzel.challenge.type.ActionAI;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -50,6 +51,7 @@ public class AIResponseBodyDTO {
             try {
                 return mapper.readValue(text, AssistantText.class);
             } catch (Exception e) {
+                System.err.println("Erro desserializando AssistantText: " + text);
                 throw new RuntimeException("Erro ao desserializar AssistantText", e);
             }
         }
@@ -62,11 +64,12 @@ public class AIResponseBodyDTO {
     public static class AssistantText {
         private String mensagem;
         private Lead lead;
+        private ActionAI action;
     }
 
     public AIResponseDTO getResponse() {
         ObjectMapper mapper = new ObjectMapper();
-        return new AIResponseDTO(id, getAssistantMessage(mapper), getAssistantLead(mapper));
+        return new AIResponseDTO(id, getAssistantMessage(mapper), getAssistantLead(mapper),getAssistantAction(mapper));
     }
 
     public String getAssistantMessage(ObjectMapper mapper) {
@@ -103,4 +106,23 @@ public class AIResponseBodyDTO {
         }
         return null;
     }
+
+    public ActionAI getAssistantAction(ObjectMapper mapper) {
+        if (output == null || output.isEmpty()) return null;
+        for (Output o : output) {
+            if (o.getContent() != null) {
+                for (Content c : o.getContent()) {
+                    if ("output_text".equals(c.getType())) {
+                        AssistantText at = c.getAssistantText(mapper);
+                        if (at != null && at.getAction() != null) {
+                            return at.getAction();
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
 }
