@@ -115,7 +115,36 @@ cd Backend
 
 A aplicação estará rodando em `http://localhost:3000`.
 
-## Frontend
+## ⚛️ Frontend (React + Vite)
 
-*(Instruções de configuração do frontend a serem adicionadas aqui.)*
+Esta seção descreve como configurar e executar o frontend da aplicação.
 
+### 1. Pré-requisitos
+
+- ✅ Node.js (versão 18 ou superior) instalado.
+
+### 2. Setup
+
+1.  **Navegue até a pasta raiz** do projeto e crie a aplicação React usando o Vite:
+    ```bash
+    # Este comando cria uma nova pasta 'Frontend' com um projeto React + TypeScript
+    npm create vite@latest Frontend -- --template react-ts
+    ```
+
+2.  **Acesse a pasta do frontend** e instale as dependências:
+    ```bash
+    cd Frontend
+    npm install
+    ```
+
+3.  **Instale as bibliotecas para WebSocket**:
+    Para se comunicar com o backend em tempo real, vamos usar STOMP sobre SockJS.
+    ```bash
+    npm install @stomp/stompjs sockjs-client
+    ```
+
+4.  **Inicie a aplicação frontend**:
+    ```bash
+    npm run dev
+    ```
+    A aplicação estará disponível em `http://localhost:5173`. O backend já está configurado para aceitar requisições desta origem.
