@@ -30,11 +30,14 @@ public class ChatController {
         // Se não tem uma Session ID eu crio para o Usuário
         if (sessionId == null || sessionId.isEmpty()) {
             sessionId = UUID.randomUUID().toString();
-            Cookie cookie = new Cookie("sessionId", sessionId);
-            cookie.setHttpOnly(false);
-            cookie.setPath("/");
-            cookie.setMaxAge(30 * 60);
-            response.addCookie(cookie);
+            int maxAge = 30 * 60;
+            String cookieHeader = String.format(
+                    "sessionId=%s; Max-Age=%d; Path=/; %s; SameSite=None; Partitioned",
+                    sessionId,
+                    maxAge,
+                    "Secure"
+            );
+            response.setHeader("Set-Cookie", cookieHeader);
         }
         ResponseDTO chatResponse = chatService.handleMessage(userMessage, sessionId);
         return ResponseEntity.ok(chatResponse);
