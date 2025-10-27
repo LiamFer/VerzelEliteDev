@@ -32,6 +32,7 @@ O backend precisa de algumas chaves de API e URLs para funcionar. Você pode con
 
 | Variável            | Descrição                                                              | Exemplo                                                              |
 |---------------------|------------------------------------------------------------------------|----------------------------------------------------------------------|
+| `PORT`      | Porta que o Backend vai rodar.                                    | `3000`                                              |
 | `FRONTEND_URL`      | URL do frontend para permitir CORS.                                    | `http://localhost:5173`                                              |
 | `DB_URL`            | Connection string do seu banco de dados PostgreSQL.                    | `jdbc:postgresql://...`                                              |
 | `PIPEFY_TOKEN`      | Token de API pessoal do Pipefy.                                        | `eyJhbGciOi...`                                                      |
