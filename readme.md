@@ -12,9 +12,11 @@ Este projeto é um assistente de vendas (SDR) virtual construído com Spring Boo
 - **CRM/Funil**: Pipefy API
 - **Build**: Maven
 
-## ⚙️ Setup do Projeto
+# ⚙️ Setup do Projeto
 
 Siga os passos abaixo para configurar e executar o projeto em seu ambiente local.
+
+## 🌱 Backend (Java + Spring Boot)
 
 ### 1. Pré-requisitos
 
@@ -141,3 +143,9 @@ Esta seção descreve como configurar e executar o frontend da aplicação.
     ```bash
     npm run dev
     ```
+
+## ⚠️ Observações e Limitações
+
+1.  **Fluxo de Agendamento (Calendly)**: A API do Calendly para criar agendamentos diretos requer um plano pago. Para contornar essa limitação, a aplicação oferece ao usuário os links de horários disponíveis. O usuário deve selecionar um horário e completar o agendamento na página do Calendly. A confirmação do evento é então recebida pelo backend via webhook, que atualiza o card no Pipefy e notifica o usuário no chat com o link da reunião.
+
+2.  **Comportamento da IA (OpenAI)**: O prompt do sistema foi projetado para guiar a IA a não oferecer novos horários após uma reunião já ter sido agendada. No entanto, como uma limitação conhecida de modelos de linguagem, a IA pode ocasionalmente desviar-se dessa instrução e perguntar novamente sobre agendamentos. Este é um ponto para melhoria contínua no refinamento do prompt.
