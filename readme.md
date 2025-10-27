@@ -47,36 +47,36 @@ O backend precisa de algumas chaves de API e URLs para funcionar. Você pode con
 3.  Clique em **"+ Criar novo card"** e adicione os seguintes campos, **respeitando exatamente os nomes e tipos**:
 
     - **Nome**: `Texto curto`
-    ![NomeField](tutorial/NomeField.png)
+    ![NomeField](/tutorial/NomeField.png)
 
     - **E-mail**: `E-mail`
-    ![EmailField](tutorial/EmailField.png)
+    ![EmailField](/tutorial/EmailField.png)
 
     - **Empresa**: `Texto curto`
-    ![EmpresaField](tutorial/EmpresaField.png)
+    ![EmpresaField](/tutorial/EmpresaField.png)
 
     - **Necessidade**: `Texto longo`
-    ![NecessidadeField](tutorial/NecessidadeField.png)
+    ![NecessidadeField](/tutorial/NecessidadeField.png)
 
     - **Interessado**: `Seleção de lista` com as opções "Sim" e "Não".
-    ![InteressadoField](tutorial/InteressadoField.png)
+    ![InteressadoField](/tutorial/InteressadoField.png)
     - **Link da Reunião**: `Texto Longo`
-    ![MeetingLink](tutorial/MeetingLink.png)
+    ![MeetingLink](/tutorial/MeetingLink.png)
     - **Hora da Reunião**: `Data e Hora`
-    ![MeetingDate](tutorial/MeetingDate.png)
+    ![MeetingDate](/tutorial/MeetingDate.png)
 
 4.  Vá em **"Configurações do Pipe"** e defina o campo **"E-mail"** como o título do card, o seu Card ao final deve ficar parecido com isso:
-    ![MeetingDate](tutorial/PipefyCard.png)
+    ![MeetingDate](/tutorial/PipefyCard.png)
 
 5.  Obtenha seu **Token de API** em https://app.pipefy.com/tokens.
 6.  O **PIPEFY_PIPE_ID** pode ser encontrado na URL do seu pipe.
-    ![PIPEFY_PIPE_ID](tutorial/pipeID.png)
+    ![PIPEFY_PIPE_ID](/tutorial/pipeID.png)
 
 #### 📅 Calendly
 
 1.  Crie uma conta e conecte-a ao seu Google Calendar.
 2.  Configure seus horários de disponibilidade (ex: 8:00 às 17:00).
-    ![Scheduling](tutorial/Scheduling.png)
+    ![Scheduling](/tutorial/Scheduling.png)
 3.  Vá para **"Integrations & Apps"** > **"API & Webhooks"** para gerar seu **CALENDLY_TOKEN**.
 4.  Para o `CALENDLY_CALLBACK`, você precisará instalar o Ngrok https://ngrok.com/download/windows:
     - Autentique-se no Ngrok (só precisa fazer uma vez):
