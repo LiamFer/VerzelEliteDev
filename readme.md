@@ -2,7 +2,7 @@
 
 Este projeto é um assistente de vendas (SDR) virtual **fullstack**, com o backend desenvolvido em **Java com Spring Boot** e o frontend em **React com Ant Design**. Ele utiliza a API da OpenAI para interagir com potenciais clientes, qualificá-los e, se houver interesse, oferecer horários para uma reunião via Calendly. Todas as interações e dados dos leads são sincronizados com um funil de vendas no Pipefy.
 
-> **[🚀 Teste a demonstração ao vivo!](https://webchatliam.vercel.app/)**
+> **[🚀 Teste a demonstração ao vivo!](https://webchatliam.netlify.app/)**
 
 ## ✨ Tecnologias Utilizadas
 
@@ -117,7 +117,10 @@ cd Backend
 
 # Execute a aplicação com o Maven
 ./mvnw spring-boot:run
+
 ```
+
+Ou você pode simplismente abrir a pasta Backend no IntelliJ configurar as variáveis de ambiente e rodar, é bem mais fácil!
 
 A aplicação estará rodando em `http://localhost:3000`.
 
@@ -156,3 +159,7 @@ Esta seção descreve como configurar e executar o frontend da aplicação.
 
 3. **Conexões externas instáveis (Deploy no Render):**
 Devido a fatores externos como rate limits, redirecionamentos ou instabilidade de rede, a aplicação pode ocasionalmente encontrar erros do tipo recvAddress(..) failed: Connection reset by peer ao se comunicar com APIs externas.
+
+4. **Latência no Primeiro Acesso e Limitações de Deploy:**
+   - **Backend (Render):** O deploy do backend está no plano gratuito do Render, que "dorme" após um período de inatividade. Isso pode causar uma demora de até 50 segundos ou mais na primeira mensagem enviada ao chatbot, pois o servidor precisa "acordar".
+   - **Frontend (Netlify/Vercel):** Durante o desenvolvimento, foi observado que plataformas de deploy estático como Netlify e Vercel não suportam nativamente a conexão persistente de WebSockets necessária para o chat em tempo real, ou seja a parte do Webhook do SDR enviar o link da Reunião no chat provavelmente não funcionará corretamente.
