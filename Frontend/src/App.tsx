@@ -1,35 +1,33 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { ConfigProvider, theme, Layout } from 'antd';
+import WebChat from './components/WebChat';
+import './animations.css';
+
+const { Content } = Layout;
 
 function App() {
-  const [count, setCount] = useState(0)
+  const cookieSessionId = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith("sessionId="))
+    ?.split("=")[1] || "";
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <ConfigProvider
+      theme={{
+        algorithm: theme.darkAlgorithm,
+        token: {
+          colorPrimary: '#1677ff',
+          colorBgBase: '#0d1117',
+          colorBgContainer: '#161b22',
+        },
+      }}
+    >
+      <Layout style={{ minHeight: '100vh', width: '100%', backgroundColor: '#0d1117' }}>
+        <Content style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
+          <WebChat sessionId={cookieSessionId} />
+        </Content>
+      </Layout>
+    </ConfigProvider>
+  );
 }
 
 export default App
