@@ -8,11 +8,10 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.util.retry.Retry;
 
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.io.IOException;
+import java.time.*;
 import java.util.*;
 
 @Service
@@ -51,6 +50,12 @@ public class PipefyService {
                 .bodyValue(Map.of("query", query))
                 .retrieve()
                 .bodyToMono(responseType)
+                .timeout(Duration.ofSeconds(10))
+                .retryWhen(
+                        Retry.backoff(3, Duration.ofSeconds(2))
+                                .maxBackoff(Duration.ofSeconds(10))
+                                .filter(throwable -> throwable instanceof IOException)
+                )
                 .block();
     }
 

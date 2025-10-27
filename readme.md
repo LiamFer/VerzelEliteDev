@@ -1,9 +1,12 @@
 # 🤖 Chatbot de Qualificação de Leads
 
-Este projeto é um assistente de vendas (SDR) virtual construído com Spring Boot. Ele utiliza a API da OpenAI para interagir com potenciais clientes, qualificá-los e, se houver interesse, oferecer horários para uma reunião via Calendly. Todas as interações e dados dos leads são sincronizados com um funil de vendas no Pipefy.
+Este projeto é um assistente de vendas (SDR) virtual **fullstack**, com o backend desenvolvido em **Java com Spring Boot** e o frontend em **React com Ant Design**. Ele utiliza a API da OpenAI para interagir com potenciais clientes, qualificá-los e, se houver interesse, oferecer horários para uma reunião via Calendly. Todas as interações e dados dos leads são sincronizados com um funil de vendas no Pipefy.
+
+> **[🚀 Teste a demonstração ao vivo!](https://webchatliam.vercel.app/)**
 
 ## ✨ Tecnologias Utilizadas
 
+- **Frontend**: React, Vite, Ant Design
 - **Backend**: Java 17, Spring Boot 3
 - **Comunicação**: WebSockets (com STOMP)
 - **Banco de Dados**: PostgreSQL
@@ -150,3 +153,6 @@ Esta seção descreve como configurar e executar o frontend da aplicação.
 1.  **Fluxo de Agendamento (Calendly)**: A API do Calendly para criar agendamentos diretos requer um plano pago. Para contornar essa limitação, a aplicação oferece ao usuário os links de horários disponíveis. O usuário deve selecionar um horário e completar o agendamento na página do Calendly. A confirmação do evento é então recebida pelo backend via webhook, que atualiza o card no Pipefy e notifica o usuário no chat com o link da reunião.
 
 2.  **Comportamento da IA (OpenAI)**: O prompt do sistema foi projetado para guiar a IA a não oferecer novos horários após uma reunião já ter sido agendada. No entanto, como uma limitação conhecida de modelos de linguagem, a IA pode ocasionalmente desviar-se dessa instrução e perguntar novamente sobre agendamentos. Este é um ponto para melhoria contínua no refinamento do prompt.
+
+3. **Conexões externas instáveis (Deploy no Render):**
+Devido a fatores externos como rate limits, redirecionamentos ou instabilidade de rede, a aplicação pode ocasionalmente encontrar erros do tipo recvAddress(..) failed: Connection reset by peer ao se comunicar com APIs externas.
