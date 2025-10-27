@@ -6,7 +6,7 @@ import SockJS from "sockjs-client";
 const STORAGE_KEY = "chat_history";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
-const sendMessageToAPI = async (message: string): Promise<string | AImessage> => {
+const sendMessageToAPI = async (message: string, onResponseReceived: () => void): Promise<string | AImessage> => {
   const response: AImessage = await (
     await fetch(`${API_URL}/chat/message`, {
       method: "POST",
@@ -17,6 +17,8 @@ const sendMessageToAPI = async (message: string): Promise<string | AImessage> =>
       credentials: "include",
     })
   ).json();
+
+  onResponseReceived(); // Notifica que a resposta foi recebida para checar o cookie
 
   if (response.action === "offer") {
     return {
@@ -30,7 +32,7 @@ const sendMessageToAPI = async (message: string): Promise<string | AImessage> =>
   return response.message;
 };
 
-export const useChat = (sessionId: string) => {
+export const useChat = (sessionId: string, onResponseReceived: () => void) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const [stompClient, setStompClient] = useState<Client | null>(null);
@@ -124,7 +126,7 @@ export const useChat = (sessionId: string) => {
     setMessages((prev) => [...prev, thinkingMessage]);
 
     try {
-      const response = await sendMessageToAPI(content);
+      const response = await sendMessageToAPI(content, onResponseReceived);
 
       // Remove thinking indicator
       setMessages((prev) => prev.filter((msg) => !msg.isThinking));
@@ -154,7 +156,7 @@ export const useChat = (sessionId: string) => {
     } finally {
       setIsThinking(false);
     }
-  }, []);
+  }, [onResponseReceived]);
 
   const handleOfferSelection = useCallback((url: string) => {
     window.open(url, "_blank", "noopener,noreferrer");

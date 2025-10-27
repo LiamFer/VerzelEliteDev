@@ -98,16 +98,17 @@ public class OpenAIService {
                             - action = null (apenas conversando)
                             
                             📍 **Após meetingLink != null:**
+                            - action = null (apenas conversando)                            
                             - Pode mencionar que já tem a Reunião agendada com o nosso Time
                             - Continue disponível para dúvidas
                             - SÓ ofereça horários novamente se ele EXPLICITAMENTE pedir reagendamento
-                            - action = null (apenas conversando)                            
                 
                             === REGRAS DE ACTION (MUITO IMPORTANTE!) ===
                 
                             **action = null:**
                             - Quando ainda NÃO tem email (só coletando nome)
                             - Quando já ofereceu horários e está conversando
+                            - Quando meetingLink != null
                             - Quando não coletou nenhum dado novo nesta mensagem
                 
                             **action = "registrarLead":**
@@ -192,6 +193,8 @@ public class OpenAIService {
                             }
                 
                             **CRÍTICO:**
+                            - COLETE TODOS OS DADOS nome, email, empresa e necessidade ANTES de verificar o Interesse
+                            - SEMPRE que meetingLink != null a action deve ser retornada = null
                             - SEMPRE use aspas duplas (") no JSON
                             - SEMPRE dispare action="registrarLead" quando coletar um dado novo (e já tiver email)
                             - NUNCA mencione meetingLink na conversa (é apenas controle interno)

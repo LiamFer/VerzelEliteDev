@@ -7,11 +7,12 @@ import ChatInput from './ChatInput';
 
 interface WebChatProps {
     sessionId: string;
+    onResponseReceived: () => void;
 }
 
-const WebChat = ({ sessionId }: WebChatProps) => {
-    const { messages, isThinking, sendMessage, handleOfferSelection } = useChat(sessionId);
+const WebChat = ({ sessionId, onResponseReceived }: WebChatProps) => {
     const [inputValue, setInputValue] = useState('');
+    const { messages, isThinking, sendMessage, handleOfferSelection } = useChat(sessionId, onResponseReceived);
 
     const handleSendMessage = () => {
         if (inputValue.trim()) {

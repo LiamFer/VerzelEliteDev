@@ -1,3 +1,4 @@
+import React from 'react';
 import { List, Typography, Button, Space, Spin, Avatar } from 'antd';
 import { ClockCircleOutlined, ApiOutlined } from '@ant-design/icons';
 import type { Message } from '../types/chat';
@@ -19,12 +20,36 @@ const formatTime = (dateString: string) => {
     });
 };
 
+/**
+ * Encontra URLs em uma string e as transforma em elementos <a> clicáveis.
+ * @param text O texto a ser verificado.
+ * @returns Um array de strings e elementos React.
+ */
+const linkify = (text: string): (string | React.ReactNode)[] => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.split(urlRegex).map((part, index) => {
+        if (part.match(urlRegex)) {
+            return (
+                <a key={index} href={part} target="_blank" rel="noopener noreferrer" style={{ color: '#40a9ff', textDecoration: 'underline' }}>
+                    {part}
+                </a>
+            );
+        }
+        return part;
+    });
+};
+
 const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
     const isUser = message.role === 'user';
 
     if (message.isThinking) {
         return (
-            <List.Item className="message-in" style={{ display: 'flex', justifyContent: 'flex-start', border: 'none' }}>
+            <List.Item
+                className="message-in"
+                style={{ display: 'flex', justifyContent: 'flex-start', border: 'none' }}
+                role="status"
+                aria-live="polite"
+            >
                 <Space>
                     <Avatar style={{ backgroundColor: 'transparent' }} icon={<ApiOutlined style={{ color: '#1677ff' }} />} />
                     <Spin size="small" />
@@ -33,6 +58,8 @@ const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
             </List.Item>
         );
     }
+
+    const timestampId = `timestamp-${message.id}`;
 
     const assistantMessage = (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
@@ -51,7 +78,7 @@ const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
                         borderTopLeftRadius: '4px',
                     }}
                 >
-                    <Text style={{ color: 'white' }}>{message.content}</Text>
+                    <Text style={{ color: 'white' }}>{linkify(message.content)}</Text>
                 </div>
                 {message.offer && (
                     <Space wrap className="offer-in" style={{ marginTop: '8px', justifyContent: 'flex-start' }}>
@@ -72,7 +99,7 @@ const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
 
     const userMessage = (
         <div style={{ background: '#1677ff', color: 'white', padding: '8px 12px', borderRadius: '18px', borderTopRightRadius: '4px' }}>
-            <Text style={{ color: 'white' }}>{message.content}</Text>
+            <Text style={{ color: 'white' }}>{linkify(message.content)}</Text>
         </div>
     );
 
@@ -85,6 +112,8 @@ const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
                 border: 'none',
                 padding: '8px 0',
             }}
+            role="article"
+            aria-label={isUser ? 'Sua mensagem' : 'Mensagem do assistente'}
         >
             <div
                 style={{
@@ -93,9 +122,10 @@ const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
                     alignItems: isUser ? 'flex-end' : 'flex-start',
                     maxWidth: '85%',
                 }}
+                aria-describedby={timestampId}
             >
                 {isUser ? userMessage : assistantMessage}
-                <Text type="secondary" style={{ fontSize: '0.75rem' }}>
+                <Text id={timestampId} type="secondary" style={{ fontSize: '0.75rem' }}>
                     {new Date(message.timestamp).toLocaleTimeString('pt-BR', {
                         hour: '2-digit',
                         minute: '2-digit',

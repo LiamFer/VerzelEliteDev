@@ -90,7 +90,7 @@ public class ChatService {
         if (lastChat != null && differentMeetingLink) {
             ResponseDTO response = new ResponseDTO(
                     ResponseAction.talk,
-                    "Aqui está o link da nossa reunião " + meetingLink + ", aguardamos você lá!",
+                    "Aqui está o link da nossa reunião " + meetingLink + " , aguardamos você lá!",
                     ""
             );
             messagingTemplate.convertAndSend("/topic/" + lastChat.getSessionId(), response);

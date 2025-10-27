@@ -1,16 +1,27 @@
+import { useState, useCallback } from 'react';
 import { ConfigProvider, theme, Layout } from 'antd';
 import WebChat from './components/WebChat';
 import './styles/animations.css';
-import ColorBends from './components/ColorBends';
-
+import FaultyTerminal from './components/FaultyTerminal';
 
 const { Content } = Layout;
 
-function App() {
-  const cookieSessionId = document.cookie
+const getSessionIdFromCookie = () => {
+  return document.cookie
     .split("; ")
     .find((row) => row.startsWith("sessionId="))
     ?.split("=")[1] || "";
+};
+
+function App() {
+  const [sessionId, setSessionId] = useState(getSessionIdFromCookie());
+
+  const handleResponseReceived = useCallback(() => {
+    const currentSessionId = getSessionIdFromCookie();
+    if (currentSessionId && currentSessionId !== sessionId) {
+      setSessionId(currentSessionId);
+    }
+  }, [sessionId]);
 
   return (
     <ConfigProvider
@@ -23,41 +34,31 @@ function App() {
         },
       }}
     >
-      <div style={{ position: 'relative', width: '100vw', height: '100vh', backgroundColor: '#0d1117' }}>
-        <ColorBends
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            zIndex: 0,
-          }}
-          colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
-          rotation={0}
-          speed={0.2}
-          scale={1}
-          frequency={1}
-          warpStrength={1}
-          mouseInfluence={1}
-          parallax={0.5}
-          noise={0.1}
-          transparent
-        />
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backdropFilter: 'blur(30px)',
-            zIndex: 1,
-          }}
-        />
+      <div style={{ position: 'relative', width: '100vw', height: '100vh', backgroundColor: '#0d1117', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 1 }}>
+          <FaultyTerminal
+            scale={1.5}
+            digitSize={1.2}
+            gridMul={[2, 1]}
+            timeScale={1}
+            pause={false}
+            scanlineIntensity={1}
+            glitchAmount={1}
+            flickerAmount={1}
+            noiseAmp={1}
+            chromaticAberration={0}
+            dither={0}
+            curvature={0.1}
+            tint='#1677ff'
+            mouseReact={true}
+            mouseStrength={0.5}
+            pageLoadAnimation={false}
+            brightness={0.6}
+          />
+        </div>
         <Layout style={{ minHeight: '100vh', width: '100%', backgroundColor: 'transparent', position: 'relative', zIndex: 2 }}>
           <Content style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '20px' }}>
-            <WebChat sessionId={cookieSessionId} />
+            <WebChat sessionId={sessionId} onResponseReceived={handleResponseReceived} />
           </Content>
         </Layout>
       </div>
