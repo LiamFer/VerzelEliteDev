@@ -143,6 +143,13 @@ Esta seção descreve como configurar e executar o frontend da aplicação.
     npm install @stomp/stompjs sockjs-client
     ```
 
+4.  **Crie um arquivo de ambiente**:
+    Na raiz da pasta `Frontend`, crie um arquivo chamado `.env` e configure a URL do seu backend.
+    ```
+    # /Frontend/.env
+    VITE_API_URL=http://localhost:3000
+    ```
+
 4.  **Inicie a aplicação frontend**:
     ```bash
     npm run dev

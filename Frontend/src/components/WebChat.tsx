@@ -21,7 +21,7 @@ const WebChat = ({ sessionId }: WebChatProps) => {
 
     return (
         <Card
-            title="Assistente de Vendas"
+            title="SDR Webchat"
             bordered={false}
             style={{
                 width: '100%',
@@ -30,6 +30,8 @@ const WebChat = ({ sessionId }: WebChatProps) => {
                 display: 'flex',
                 flexDirection: 'column',
             }}
+            aria-busy={isThinking}
+            aria-live="polite"
             bodyStyle={{ flex: 1, padding: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
         >
             <MessageList messages={messages} onOfferSelect={handleOfferSelection} />

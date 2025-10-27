@@ -21,7 +21,6 @@ const formatTime = (dateString: string) => {
 
 const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
     const isUser = message.role === 'user';
-    console.log(message)
 
     if (message.isThinking) {
         return (

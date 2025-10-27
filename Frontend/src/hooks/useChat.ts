@@ -4,10 +4,11 @@ import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
 const STORAGE_KEY = "chat_history";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
 const sendMessageToAPI = async (message: string): Promise<string | AImessage> => {
   const response: AImessage = await (
-    await fetch("http://localhost:3000/chat/message", {
+    await fetch(`${API_URL}/chat/message`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -52,7 +53,7 @@ export const useChat = (sessionId: string) => {
     if (!sessionId) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:3000/ws"),
+      webSocketFactory: () => new SockJS(`${API_URL}/ws`),
       reconnectDelay: 5000,
       debug: (str) => console.log("STOMP:", str),
     });
@@ -150,11 +151,6 @@ export const useChat = (sessionId: string) => {
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages((prev) => prev.filter((msg) => !msg.isThinking));
-      toast({
-        title: "Erro ao enviar mensagem",
-        description: "Não foi possível conectar com o servidor. Tente novamente.",
-        variant: "destructive",
-      });
     } finally {
       setIsThinking(false);
     }
