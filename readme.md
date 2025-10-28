@@ -5,6 +5,8 @@ Este projeto é um assistente de vendas (SDR) virtual **fullstack**, com o backe
 > **[🚀 Teste a demonstração ao vivo!](https://webchatliam.netlify.app/)**
 ![Deployed Application](/tutorial/app.gif)
 
+
+
 ## ✨ Tecnologias Utilizadas
 
 - **Frontend**: React, Vite, Ant Design
@@ -15,6 +17,31 @@ Este projeto é um assistente de vendas (SDR) virtual **fullstack**, com o backe
 - **Agendamento**: Calendly API
 - **CRM/Funil**: Pipefy API
 - **Build**: Maven
+
+## 🚀 Funcionalidades Principais
+
+O projeto foi desenvolvido para ser um assistente de vendas completo e autônomo. Abaixo estão suas principais funcionalidades:
+
+- **🤖 Inteligência Artificial Conversacional**: Utiliza o modelo `gpt-4o-mini` da OpenAI para conduzir uma conversa natural e consultiva, seguindo um fluxo de qualificação pré-definido para coletar informações essenciais do lead.
+
+- **📊 Coleta e Qualificação de Leads**: A IA é instruída a coletar, em ordem, os seguintes dados do potencial cliente:
+  1.  Nome
+  2.  E-mail (com validação de formato)
+  3.  Empresa
+  4.  Necessidade/Desafio
+  5.  Interesse em uma demonstração
+
+- **🔄 Sincronização com CRM (Pipefy)**:
+    - **Criação de Cards**: Assim que o e-mail do lead é coletado, um novo card é criado automaticamente no funil do Pipefy.
+    - **Atualização Contínua**: A cada nova informação obtida (nome, empresa, necessidade, etc.), o card correspondente no Pipefy é atualizado em tempo real.
+
+- **🗓️ Agendamento Inteligente de Reuniões (Calendly)**:
+    - **Oferta de Horários**: Após qualificar o lead e confirmar o interesse, a IA oferece horários de reunião disponíveis, buscando-os diretamente na API do Calendly.
+    - **Confirmação via Webhook**: Quando o usuário finaliza o agendamento no Calendly, um webhook é disparado. O backend recebe essa notificação, atualiza o card no Pipefy com o link e a data da reunião, e **envia uma mensagem de confirmação no chat para o usuário com o link do evento**.
+
+- **💬 Comunicação em Tempo Real (WebSockets)**: A comunicação entre frontend e backend utiliza WebSockets com STOMP, permitindo que o servidor envie notificações proativas para o cliente, como a confirmação do agendamento da reunião.
+
+- **⚠️ Feedback de Erros**: Caso ocorra algum problema na comunicação com a API ou no processamento da mensagem, o frontend exibe uma mensagem de erro amigável, garantindo uma melhor experiência para o usuário.
 
 # ⚙️ Setup do Projeto
 
