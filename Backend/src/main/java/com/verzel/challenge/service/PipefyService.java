@@ -8,6 +8,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.util.retry.Retry;
 
 import java.io.IOException;
@@ -54,7 +55,7 @@ public class PipefyService {
                 .retryWhen(
                         Retry.backoff(3, Duration.ofSeconds(2))
                                 .maxBackoff(Duration.ofSeconds(10))
-                                .filter(throwable -> throwable instanceof IOException)
+                                .filter(throwable -> throwable instanceof WebClientRequestException || throwable instanceof IOException)
                 )
                 .block();
     }
