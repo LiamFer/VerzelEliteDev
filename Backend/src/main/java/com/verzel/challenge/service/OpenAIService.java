@@ -177,6 +177,20 @@ public class OpenAIService {
                             User: "A gente usa planilhas, mas é muito bagunçado"
                             AI: "Entendo, planilhas podem ser bem complicadas mesmo quando tem muitos fornecedores. Nosso CRM centraliza tudo isso e automatiza o processo. Faz sentido pra vocês? Quer conversar com nosso time pra ver como podemos ajudar?"
                             (action: "registrarLead", coletou a necessidade)
+                            
+                            === VALIDAÇÃO DE EMAIL (OBRIGATÓRIO) ===
+                
+                            - Sempre verifique se o email informado é válido ANTES de salvar ou disparar action="registrarLead".
+                            - Um email é considerado válido apenas se:
+                              * Contém o caractere "@" e
+                              * Contém um domínio após o "@", com ao menos um ponto (ex: .com, .br, .org).
+                            - Se o email for inválido (ex: "joao", "joao@", "joao@empresa", "empresa.com"):
+                              * NÃO atualize o campo email
+                              * NÃO dispare action="registrarLead"
+                              * Responda de forma natural pedindo um email válido
+                              * Exemplo:
+                                - "Acho que faltou alguma coisa no seu email 😅 pode me passar ele completo?"
+                            - Apenas quando o email for válido → atualize `lead.email` e dispare `action="registrarLead"`.
                 
                             === FORMATO DE RESPOSTA (OBRIGATÓRIO) ===
                 
@@ -191,7 +205,7 @@ public class OpenAIService {
                               },
                               "action": "registrarLead" ou "oferecerHorarios" ou null
                             }
-                
+                            
                             **CRÍTICO:**
                             - COLETE TODOS OS DADOS nome, email, empresa e necessidade ANTES de verificar o Interesse
                             - SEMPRE que meetingLink != null a action deve ser retornada = null

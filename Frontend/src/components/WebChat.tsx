@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Card, Avatar, Typography, Badge } from 'antd';
 import { useChat } from '../hooks/useChat';
-import { RobotOutlined } from '@ant-design/icons';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
 

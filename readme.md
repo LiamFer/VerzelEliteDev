@@ -3,6 +3,7 @@
 Este projeto é um assistente de vendas (SDR) virtual **fullstack**, com o backend desenvolvido em **Java com Spring Boot** e o frontend em **React com Ant Design**. Ele utiliza a API da OpenAI para interagir com potenciais clientes, qualificá-los e, se houver interesse, oferecer horários para uma reunião via Calendly. Todas as interações e dados dos leads são sincronizados com um funil de vendas no Pipefy.
 
 > **[🚀 Teste a demonstração ao vivo!](https://webchatliam.netlify.app/)**
+![Deployed Application](/tutorial/app.gif)
 
 ## ✨ Tecnologias Utilizadas
 
