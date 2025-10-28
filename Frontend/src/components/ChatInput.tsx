@@ -1,5 +1,7 @@
-import { Input, Button, Space } from 'antd';
+import React, { useEffect, useRef } from 'react';
+import { Input, Button, Space, type InputRef } from 'antd';
 import { SendOutlined } from '@ant-design/icons';
+
 
 interface ChatInputProps {
     value: string;
@@ -10,6 +12,13 @@ interface ChatInputProps {
 }
 
 const ChatInput = ({ value, onChange, onSend, disabled, isThinking }: ChatInputProps) => {
+    const inputRef = useRef<InputRef>(null);
+
+    useEffect(() => {
+        if (!isThinking) {
+            inputRef.current?.focus();
+        }
+    }, [isThinking]);
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && !disabled) {
             onSend();
@@ -23,6 +32,7 @@ const ChatInput = ({ value, onChange, onSend, disabled, isThinking }: ChatInputP
         <div style={{ padding: '16px 24px', borderTop: '1px solid #303030' }}>
             <Space.Compact style={{ width: '100%' }}>
                 <Input
+                    ref={inputRef}
                     aria-label="Digite sua mensagem"
                     placeholder={isThinking ? 'Aguarde o assistente responder...' : 'Digite sua mensagem...'}
                     value={value}
