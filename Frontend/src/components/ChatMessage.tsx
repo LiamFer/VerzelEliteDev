@@ -41,6 +41,7 @@ const linkify = (text: string): (string | React.ReactNode)[] => {
 
 const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
     const isUser = message.role === 'user';
+    const isError = message.role === 'error';
 
     if (message.isThinking) {
         return (
@@ -61,7 +62,7 @@ const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
 
     const timestampId = `timestamp-${message.id}`;
 
-    const assistantMessage = (
+    const assistantMessageContent = (
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
             <Avatar
                 style={{ backgroundColor: '#1677ff', flexShrink: 0, marginTop: '4px' }}
@@ -97,9 +98,24 @@ const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
         </div>
     );
 
-    const userMessage = (
+    const userMessageContent = (
         <div style={{ background: '#1677ff', color: 'white', padding: '8px 12px', borderRadius: '18px', borderTopRightRadius: '4px' }}>
             <Text style={{ color: 'white' }}>{linkify(message.content)}</Text>
+        </div>
+    );
+
+    const errorMessageContent = (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+            <Avatar style={{ backgroundColor: '#ff4d4f', flexShrink: 0, marginTop: '4px' }} icon={<ApiOutlined style={{ color: 'white' }} />} />
+            <div style={{
+                background: '#ff4d4f', // Cor vermelha para erro
+                color: 'white',
+                padding: '8px 12px',
+                borderRadius: '18px',
+                borderTopLeftRadius: '4px',
+            }}>
+                <Text style={{ color: 'white' }}>{linkify(message.content)}</Text>
+            </div>
         </div>
     );
 
@@ -113,7 +129,7 @@ const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
                 padding: '8px 0',
             }}
             role="article"
-            aria-label={isUser ? 'Sua mensagem' : 'Mensagem do assistente'}
+            aria-label={isUser ? 'Sua mensagem' : (isError ? 'Mensagem de erro' : 'Mensagem do assistente')}
         >
             <div
                 style={{
@@ -124,7 +140,7 @@ const ChatMessage = ({ message, onOfferSelect }: ChatMessageProps) => {
                 }}
                 aria-describedby={timestampId}
             >
-                {isUser ? userMessage : assistantMessage}
+                {isUser ? userMessageContent : (isError ? errorMessageContent : assistantMessageContent)}
                 <Text id={timestampId} type="secondary" style={{ fontSize: '0.75rem' }}>
                     {new Date(message.timestamp).toLocaleTimeString('pt-BR', {
                         hour: '2-digit',

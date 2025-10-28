@@ -1,35 +1,42 @@
 import { useState, useEffect, useCallback } from "react";
-import type { AImessage, Message, SchedulingOffer } from "../types/chat";
+import type { AImessage, Message, SchedulingOffer, SchedulingSlot } from "../types/chat";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
 const STORAGE_KEY = "chat_history";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
 
-const sendMessageToAPI = async (message: string, onResponseReceived: () => void): Promise<string | AImessage> => {
-  const response: AImessage = await (
-    await fetch(`${API_URL}/chat/message`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ message }),
-      credentials: "include",
-    })
-  ).json();
+const sendMessageToAPI = async (message: string, onResponseReceived: () => void): Promise<string | AImessage> => {  const rawResponse = await fetch(`${API_URL}/chat/message`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ message }),
+    credentials: "include",
+  });
 
-  onResponseReceived(); // Notifica que a resposta foi recebida para checar o cookie
+  onResponseReceived();
 
-  if (response.action === "offer") {
+  const responseBody = await rawResponse.json();
+
+  // Verifica se a resposta HTTP não foi bem-sucedida ou se o corpo contém uma estrutura de erro do backend
+  if (!rawResponse.ok || (responseBody && typeof responseBody === 'object' && 'code' in responseBody && 'message' in responseBody)) {
+    const errorMessage = responseBody.message || "Ocorreu um erro desconhecido no servidor.";
+    throw new Error(errorMessage);
+  }
+
+  const aiResponse: AImessage = responseBody;
+
+  if (aiResponse.action === "offer") {
     return {
       action: "offer",
-      message: "Encontrei alguns horários disponíveis para você, só escolher um deles e clique em agendar!",
-      data: response.data.map((slot: SchedulingOffer) => {
+      message: "Encontrei alguns horários disponíveis para você, é só escolher um deles e clicar em agendar!",
+      data: aiResponse.data.map((slot: SchedulingSlot) => {
         return {...slot, start_time: new Date(slot.start_time).toISOString()}
       })
     };
   }
-  return response.message;
+  return aiResponse.message;
 };
 
 export const useChat = (sessionId: string, onResponseReceived: () => void) => {
@@ -97,7 +104,7 @@ export const useChat = (sessionId: string, onResponseReceived: () => void) => {
     };
   }, [sessionId]);
 
-  // Save chat history to localStorage whenever it changes
+  // Salvar o Chat no Local Storage
   useEffect(() => {
     if (messages.length > 0) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
@@ -105,7 +112,7 @@ export const useChat = (sessionId: string, onResponseReceived: () => void) => {
   }, [messages]);
 
   const sendMessage = useCallback(async (content: string) => {
-    // Add user message
+    
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       role: "user",
@@ -115,7 +122,6 @@ export const useChat = (sessionId: string, onResponseReceived: () => void) => {
     setMessages((prev) => [...prev, userMessage]);
     setIsThinking(true);
 
-    // Add thinking indicator
     const thinkingMessage: Message = {
       id: `thinking-${Date.now()}`,
       role: "assistant",
@@ -128,7 +134,6 @@ export const useChat = (sessionId: string, onResponseReceived: () => void) => {
     try {
       const response = await sendMessageToAPI(content, onResponseReceived);
 
-      // Remove thinking indicator
       setMessages((prev) => prev.filter((msg) => !msg.isThinking));
 
       // Handle response
@@ -153,6 +158,14 @@ export const useChat = (sessionId: string, onResponseReceived: () => void) => {
     } catch (error) {
       console.error("Error sending message:", error);
       setMessages((prev) => prev.filter((msg) => !msg.isThinking));
+      const errorMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: "error",
+        content: `Oops! Ocorreu um erro. Por favor, tente novamente mais tarde.`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+
     } finally {
       setIsThinking(false);
     }

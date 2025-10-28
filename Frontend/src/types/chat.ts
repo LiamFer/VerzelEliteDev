@@ -1,6 +1,6 @@
 export interface Message {
   id: string;
-  role: "user" | "assistant";
+  role: "user" | "assistant" | "error";
   content: string;
   timestamp: Date;
   isThinking?: boolean;
