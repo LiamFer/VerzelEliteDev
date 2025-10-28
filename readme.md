@@ -100,7 +100,7 @@ O backend precisa de algumas chaves de API e URLs para funcionar. Você pode con
     ![MeetingDate](/tutorial/MeetingDate.png)
 
 4.  Vá em **"Configurações do Pipe"** e defina o campo **"E-mail"** como o título do card, o seu Card ao final deve ficar parecido com isso:
-    ![MeetingDate](/tutorial/PipefyCard.png)
+    ![CompleteCard](/tutorial/PipefyCard.png)
 
 5.  Obtenha seu **Token de API** em https://app.pipefy.com/tokens.
 6.  O **PIPEFY_PIPE_ID** pode ser encontrado na URL do seu pipe.
